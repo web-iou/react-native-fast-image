@@ -16,9 +16,6 @@ import com.bumptech.glide.request.Request;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeMap;
-import com.facebook.react.uimanager.ThemedReactContext;
-import com.facebook.react.uimanager.events.RCTEventEmitter;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -80,12 +77,9 @@ class FastImageViewWithUrl extends AppCompatImageView {
         final FastImageSource imageSource = FastImageViewConverter.getImageSource(getContext(), mSource);
 
         if (imageSource != null && imageSource.getUri().toString().length() == 0) {
-            ThemedReactContext context = (ThemedReactContext) getContext();
-            RCTEventEmitter eventEmitter = context.getJSModule(RCTEventEmitter.class);
-            int viewId = getId();
             WritableMap event = new WritableNativeMap();
             event.putString("message", "Invalid source prop:" + mSource);
-            eventEmitter.receiveEvent(viewId, REACT_ON_ERROR_EVENT, event);
+            FastImageEventEmitter.dispatch(this, REACT_ON_ERROR_EVENT, event);
 
             // Cancel existing requests.
             clearView(requestManager);
@@ -118,13 +112,10 @@ class FastImageViewWithUrl extends AppCompatImageView {
             }
         }
 
-        ThemedReactContext context = (ThemedReactContext) getContext();
         if (imageSource != null) {
             // This is an orphan even without a load/loadend when only loading a placeholder
-            RCTEventEmitter eventEmitter = context.getJSModule(RCTEventEmitter.class);
-            int viewId = this.getId();
-
-            eventEmitter.receiveEvent(viewId,
+            FastImageEventEmitter.dispatch(
+                    this,
                     FastImageViewManager.REACT_ON_LOAD_START_EVENT,
                     new WritableNativeMap());
         }
@@ -140,7 +131,7 @@ class FastImageViewWithUrl extends AppCompatImageView {
                             //    - data:image/png;base64
                             .load(imageSource == null ? null : imageSource.getSourceForLoad())
                             .apply(FastImageViewConverter
-                                    .getOptions(context, imageSource, mSource)
+                                    .getOptions(getContext(), imageSource, mSource)
                                     .placeholder(mDefaultSource) // show until loaded
                                     .fallback(mDefaultSource)); // null will not be treated as error
 
