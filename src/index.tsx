@@ -250,7 +250,9 @@ FastImage.preload = (sources: Source[]) =>
 
 FastImage.clearMemoryCache = () =>
     NativeModules.FastImageView.clearMemoryCache()
-
+FastImage.getSize =async (sources:Source[]) => {
+    return await NativeModules.FastImageView.getSize(sources);
+  };
 FastImage.clearDiskCache = () => NativeModules.FastImageView.clearDiskCache()
 
 const styles = StyleSheet.create({
