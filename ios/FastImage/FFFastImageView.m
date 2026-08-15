@@ -1,6 +1,7 @@
 #import "FFFastImageView.h"
 #import <SDWebImage/UIImage+MultiFormat.h>
 #import <SDWebImage/UIView+WebCache.h>
+#import <SDWebImage/SDImageTransformer.h>
 
 @interface FFFastImageView ()
 
@@ -113,6 +114,34 @@
     }
 }
 
+- (void) setBlurRadius: (CGFloat)blurRadius {
+    if (_blurRadius != blurRadius) {
+        _blurRadius = blurRadius;
+        _needsReload = YES;
+    }
+}
+
+- (SDWebImageContext*) contextWithRequestModifier: (SDWebImageDownloaderRequestModifier*)requestModifier {
+    NSMutableDictionary* context = [NSMutableDictionary dictionary];
+    if (requestModifier) {
+        context[SDWebImageContextDownloadRequestModifier] = requestModifier;
+    }
+    if (_blurRadius > 0) {
+        id<SDImageTransformer> transformer = [SDImageBlurTransformer transformerWithRadius: _blurRadius];
+        context[SDWebImageContextImageTransformer] = transformer;
+    }
+    return context.count > 0 ? [context copy] : nil;
+}
+
+- (UIImage*) applyBlurIfNeeded: (UIImage*)image {
+    if (!image || _blurRadius <= 0) {
+        return image;
+    }
+
+    id<SDImageTransformer> transformer = [SDImageBlurTransformer transformerWithRadius: _blurRadius];
+    return [transformer transformedImageWithImage: image forKey: @""];
+}
+
 - (void) didSetProps: (NSArray<NSString*>*)changedProps {
     if (_needsReload) {
         [self reloadImage];
@@ -134,6 +163,7 @@
             }
             // Use SDWebImage API to support external format like WebP images
             UIImage* image = [UIImage sd_imageWithData: [NSData dataWithContentsOfURL: _source.url]];
+            image = [self applyBlurIfNeeded: image];
             [self setImage: image];
             if (self.onFastImageProgress) {
                 self.onFastImageProgress(@{
@@ -160,7 +190,7 @@
             }
             return [mutableRequest copy];
         }];
-        SDWebImageContext* context = @{SDWebImageContextDownloadRequestModifier: requestModifier};
+        SDWebImageContext* context = [self contextWithRequestModifier: requestModifier];
 
         // Set priority.
         SDWebImageOptions options = SDWebImageRetryFailed | SDWebImageHandleCookies;
@@ -198,7 +228,7 @@
 
         [self downloadImage: _source options: options context: context];
     } else if (_defaultSource) {
-        [self setImage: _defaultSource];
+        [self setImage: [self applyBlurIfNeeded: _defaultSource]];
     }
 }
 

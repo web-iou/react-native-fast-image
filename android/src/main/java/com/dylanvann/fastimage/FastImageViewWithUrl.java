@@ -27,6 +27,7 @@ class FastImageViewWithUrl extends AppCompatImageView {
     private boolean mNeedsReload = false;
     private ReadableMap mSource = null;
     private Drawable mDefaultSource = null;
+    private float mBlurRadius = 0f;
 
     public GlideUrl glideUrl;
 
@@ -42,6 +43,13 @@ class FastImageViewWithUrl extends AppCompatImageView {
     public void setDefaultSource(@Nullable Drawable source) {
         mNeedsReload = true;
         mDefaultSource = source;
+    }
+
+    public void setBlurRadius(float blurRadius) {
+        if (mBlurRadius != blurRadius) {
+            mBlurRadius = blurRadius;
+            mNeedsReload = true;
+        }
     }
 
     private boolean isNullOrEmpty(final String url) {
@@ -134,6 +142,10 @@ class FastImageViewWithUrl extends AppCompatImageView {
                                     .getOptions(getContext(), imageSource, mSource)
                                     .placeholder(mDefaultSource) // show until loaded
                                     .fallback(mDefaultSource)); // null will not be treated as error
+
+            if (mBlurRadius > 0) {
+                builder.transform(new FastImageBlurTransformation(getContext(), mBlurRadius));
+            }
 
             if (key != null)
                 builder.listener(new FastImageRequestListener(key));

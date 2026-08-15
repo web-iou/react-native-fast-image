@@ -76,6 +76,11 @@ class FastImageViewManager extends SimpleViewManager<FastImageViewWithUrl> imple
         }
     }
 
+    @ReactProp(name = "blurRadius", defaultFloat = 0f)
+    public void setBlurRadius(FastImageViewWithUrl view, float blurRadius) {
+        view.setBlurRadius(blurRadius);
+    }
+
     @ReactProp(name = "resizeMode")
     public void setResizeMode(FastImageViewWithUrl view, String resizeMode) {
         final FastImageViewWithUrl.ScaleType scaleType = FastImageViewConverter.getScaleType(resizeMode);

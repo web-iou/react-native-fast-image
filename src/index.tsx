@@ -112,6 +112,12 @@ export interface FastImageProps extends AccessibilityProps, ViewProps {
     style?: StyleProp<ImageStyle>
 
     /**
+     * Blur radius. iOS: SDImageBlurTransformer; Android: Glide stack blur.
+     * 0 means no blur.
+     */
+    blurRadius?: number
+
+    /**
      * TintColor
      *
      * If supplied, changes the color of all the non-transparent pixels to the given color.
@@ -157,6 +163,7 @@ function FastImageBase({
     source,
     defaultSource,
     tintColor,
+    blurRadius,
     onLoadStart,
     onProgress,
     onLoad,
@@ -182,6 +189,7 @@ function FastImageBase({
                     style={[StyleSheet.absoluteFill, { tintColor }]}
                     source={resolvedSource}
                     defaultSource={defaultSource}
+                    blurRadius={blurRadius}
                     onLoadStart={onLoadStart}
                     onProgress={onProgress}
                     onLoad={onLoad as any}
@@ -202,6 +210,7 @@ function FastImageBase({
             <FastImageView
                 {...props}
                 tintColor={tintColor}
+                blurRadius={blurRadius}
                 style={StyleSheet.absoluteFill}
                 source={resolvedSource}
                 defaultSource={resolvedDefaultSource}
